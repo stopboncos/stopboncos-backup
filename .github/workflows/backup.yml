@@ -23,7 +23,7 @@ jobs:
           DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           FILENAME="backup-$(date +'%Y-%m-%d').dump"
-          pg_dump "$DATABASE_URL" -Fc -f "$FILENAME"
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" -Fc -f "$FILENAME"
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
 
       - name: Upload to GitHub Releases
