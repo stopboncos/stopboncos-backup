@@ -1,0 +1,30 @@
+name: Supabase Daily Backup
+
+on:
+  schedule:
+    - cron: '0 19 * * *' # 02.00 WIB (UTC+7)
+  workflow_dispatch: # bisa trigger manual
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install postgresql-client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          FILENAME="backup-$(date +'%Y-%m-%d').dump"
+          pg_dump "$DATABASE_URL" -Fc -f "$FILENAME"
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+
+      - name: Upload to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: backup-${{ github.run_number }}
+          name: Backup ${{ github.run_number }} - ${{ env.FILENAME }}
+          files: ${{ env.FILENAME }}
+          token: ${{ secrets.GH_TOKEN }}
